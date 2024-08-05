@@ -1,3 +1,5 @@
+import {TrainingVideoModel} from "./training-video-model";
+
 export interface TrainingModel {
     id: number
     title?: string
@@ -5,4 +7,6 @@ export interface TrainingModel {
     durationInMinutes?: number
     videoCount?: number
     type?: string
+
+    videos?: TrainingVideoModel[]
 }
