@@ -1,0 +1,231 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AppleAuth {
+  id            Int       @id @default(autoincrement())
+  appleUserId   String    @map("apple_user_id") @db.VarChar
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  appleEmail    String    @unique @map("apple_email") @db.VarChar
+  isEmailHidden Boolean?  @map("is_email_hidden")
+  userId        Int       @map("user_id")
+  user          Users     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("apple_auth")
+}
+
+model GoogleAuth {
+  id            Int       @id @default(autoincrement())
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  googleEmail   String?   @unique @map("google_email") @db.VarChar
+  isEmailHidden Boolean?  @map("is_email_hidden")
+  userId        Int?      @map("user_id")
+  user          Users?    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("google_auth")
+}
+
+model Managers {
+  id                    Int                   @id @default(autoincrement())
+  createdAt             DateTime?             @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt             DateTime?             @map("updated_at") @db.Timestamp(6)
+  name                  String?               @db.VarChar
+  type                  manager_types?
+  password_auth_manager PasswordAuthManager[]
+
+  @@map("managers")
+}
+
+model Media {
+  id             Int             @id @default(autoincrement())
+  createdAt      DateTime?       @default(now()) @map("created_at") @db.Timestamp(6)
+  path           String?         @db.VarChar
+  mediaType      media_type?     @map("media_type")
+  nutritions     Nutritions[]
+  publications   Publications[]
+  recipes        Recipes[]
+  supplements    Supplements[]
+  training_video TrainingVideo[]
+  trainings      Trainings[]
+
+  @@map("media")
+}
+
+model Nutritions {
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  fullText       String?   @map("full_text")
+  previewText    String?   @map("preview_text") @db.VarChar
+  title          String?   @db.VarChar
+  previewMediaId Int?      @map("preview_media_id")
+  media          Media?    @relation(fields: [previewMediaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("nutritions")
+}
+
+model PasswordAuthManager {
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  login          String    @unique @db.VarChar
+  passwordBcrypt String    @map("password_bcrypt") @db.VarChar
+  managerId      Int       @map("manager_id")
+  manager        Managers  @relation(fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("password_auth_manager")
+}
+
+model Publications {
+  id             Int                @id @default(autoincrement())
+  createdAt      DateTime?          @default(now()) @map("created_at") @db.Timestamp(6)
+  type           publication_types?
+  text           String?
+  previewText    String?            @map("preview_text") @db.VarChar
+  title          String?            @db.VarChar
+  authorName     String?            @map("author_name") @db.VarChar
+  previewMediaId Int?               @map("preview_media_id")
+  isPopular      Boolean?           @map("is_popular")
+  media          Media?             @relation(fields: [previewMediaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("publications")
+}
+
+model Recipes {
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  fullText       String?   @map("full_text")
+  previewText    String?   @map("preview_text") @db.VarChar
+  title          String?   @db.VarChar
+  previewMediaId Int?      @map("preview_media_id")
+  media          Media?    @relation(fields: [previewMediaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("recipes")
+}
+
+model Supplements {
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  fullText       String?   @map("full_text")
+  previewText    String?   @map("preview_text") @db.VarChar
+  title          String?   @db.VarChar
+  previewMediaId Int?      @map("preview_media_id")
+  media          Media?    @relation(fields: [previewMediaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("supplements")
+}
+
+model TrainingVideo {
+  id                Int                 @id @default(autoincrement())
+  createdAt         DateTime?           @default(now()) @map("created_at") @db.Timestamp(6)
+  title             String?             @db.VarChar
+  secondTitle       String?             @map("second_title") @db.VarChar
+  description       String?             @db.VarChar
+  estimationTime    Int?                @map("estimation_time")
+  videoId           Int?                @map("video_id")
+  media             Media?              @relation(fields: [videoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  trainingsToVideos TrainingsToVideos[]
+
+  @@map("training_video")
+}
+
+model Trainings {
+  id                Int                 @id @default(autoincrement())
+  createdAt         DateTime?           @default(now()) @map("created_at") @db.Timestamp(6)
+  title             String?             @db.VarChar
+  imageUrl          String?             @map("image_url") @db.VarChar
+  durationInMinutes Int?                @map("duration_in_minutes")
+  videoCount        Int?                @map("video_count")
+  type              String?             @db.VarChar
+  previewMediaId    Int?                @map("preview_media_id")
+  media             Media?              @relation(fields: [previewMediaId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "trainings_media_id_fk")
+  trainingsToVideos TrainingsToVideos[]
+
+  @@map("trainings")
+}
+
+model TrainingsToVideos {
+  id              Int            @id @default(autoincrement())
+  trainingId      Int?           @map("training_id")
+  trainingVideoId Int?           @map("training_video_id")
+  training        Trainings?     @relation(fields: [trainingId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  trainingVideo   TrainingVideo? @relation(fields: [trainingVideoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("trainings_to_videos")
+}
+
+model UserDrugs {
+  id        Int             @id @default(autoincrement())
+  userId    Int?            @map("user_id")
+  title     String?         @db.VarChar
+  intervals day_intervals[]
+  user      Users?          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("user_drugs")
+}
+
+model Users {
+  id                Int          @id @default(autoincrement())
+  createdAt         DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
+  name              String?      @db.VarChar
+  birthday          DateTime?    @db.Timestamp(6)
+  sex               sexes?
+  goal              goals?
+  username          String?      @db.VarChar
+  waternorm         Float?
+  weight            Float?
+  bodyType          body_types?  @map("body_type")
+  isSignUpCompleted Boolean?     @default(false) @map("is_sign_up_completed")
+  isBanned          Boolean?     @default(false) @map("is_banned")
+  appleAuth         AppleAuth[]
+  googleAuth        GoogleAuth[]
+  userDrugs         UserDrugs[]
+
+  @@map("users")
+}
+
+enum body_types {
+  FAT
+  NORMAL
+  FIT
+}
+
+enum day_intervals {
+  MORNING
+  DAY
+  EVENING
+}
+
+enum goals {
+  GAIN_WEIGHT
+  LIFE_MODE
+  LOOSE_WEIGHT
+}
+
+enum manager_types {
+  ADMIN
+  WRITER
+}
+
+enum media_type {
+  VIDEO
+  IMAGE
+}
+
+enum publication_types {
+  ARTICLES
+  NEWS
+  FOOTBALL
+  BASKETBALL
+  HOCKEY
+  FITNESS
+  ONRU_NEWS
+}
+
+enum sexes {
+  MALE
+  FEMALE
+}
